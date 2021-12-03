@@ -1,4 +1,7 @@
-﻿
+﻿var timer = new System.Diagnostics.Stopwatch();
+timer.Start();
+
+
 int MostCommonByPosition(IEnumerable<string> inputs, int index, int tie)
 {
   var zeroes = 0;
@@ -22,14 +25,33 @@ int MostCommonByPosition(IEnumerable<string> inputs, int index, int tie)
   return ones < zeroes ? 0 : 1;
 }
 
-var data = File.ReadAllLines("input");
-
-var bits = new int[data[0].Length];
-
-for (int i = 0; i < bits.Length; i++)
+int[] MostCommon(string[] inputs, int tie)
 {
-  bits[i] = MostCommonByPosition(data, i, 1);
+  var stuff = new Counts[inputs[0].Length];
+
+  foreach(var input in inputs)
+  {
+    for (var i = 0; i < input.Length; i++)
+    {
+      if (input[i] == '0')
+      {
+        stuff[i].zeroes++;
+      }
+      else
+      {
+        stuff[i].ones++;
+      }
+    }
+  }
+
+  return stuff.Select(s => s.Value(tie)).ToArray();
 }
+
+var data = File.ReadAllLines("input");
+Console.WriteLine("Time to read file " + timer.ElapsedMilliseconds);
+
+var bits = MostCommon(data, 1);
+Console.WriteLine("Time to get bits " + timer.ElapsedMilliseconds);
 
 var gamma = GetDecimal(bits);
 Console.WriteLine("gamma " + gamma);
@@ -42,6 +64,7 @@ var power = gamma * epsilon;
 
 Console.WriteLine("power: " + power);
 // 693486
+Console.WriteLine("Time to get power " + timer.ElapsedMilliseconds);
 
 int GetDecimal(int[] bits)
 {
@@ -94,3 +117,21 @@ Console.WriteLine(new { oxygen, co2 });
 Console.WriteLine(oxygen * co2);
 // 3379326
 
+timer.Stop();
+Console.WriteLine("total time " + timer.ElapsedMilliseconds);
+
+
+struct Counts
+{
+  public int ones;
+  public int zeroes;
+
+  public int Value(int tie)
+  {
+    if (ones == zeroes)
+    {
+      return tie;
+    }
+    return ones > zeroes ? 1 : 0;
+  }
+}
