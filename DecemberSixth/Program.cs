@@ -79,6 +79,7 @@ for (var run = 0; run < 5; run++)
   Console.WriteLine(new { part2Count, part2Time });
 
   watch.Restart();
+
   var arrayApproachDays = 256;
   long arrayApproachCount = 0;
 
