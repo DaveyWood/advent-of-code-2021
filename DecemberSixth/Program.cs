@@ -78,7 +78,7 @@ for (var run = 0; run < 5; run++)
   var part2Time = watch.Elapsed.TotalMilliseconds;
   Console.WriteLine(new { part2Count, part2Time });
 
-  watch.Reset();
+  watch.Restart();
   var arrayApproachDays = 256;
   long arrayApproachCount = 0;
 
