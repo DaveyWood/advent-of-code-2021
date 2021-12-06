@@ -80,6 +80,7 @@ for (var run = 0; run < 5; run++)
 
   watch.Restart();
 
+  // best approach, adapted from https://github.com/jjcomer/advent-2021
   var arrayApproachDays = 256;
   long arrayApproachCount = 0;
 
