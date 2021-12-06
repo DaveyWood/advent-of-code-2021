@@ -74,43 +74,36 @@ for (var run = 0; run < 5; run++)
     var firstCreateDay = part2Days + 8 - age;
     part2Count += GetResultByDaysLeft(firstCreateDay);
   }
-  // part2Count += newSchool.Count;
-
-  // foreach (var pair in initialTimerToFinalCountLookup)
-  // {
-  //   Console.WriteLine(new { pair.Key, pair.Value });
-  // }
-
-
-  // TOO SLOW
-  // foreach (var age in newSchool)
-  // {
-  //   if (initialTimerToFinalCountLookup.ContainsKey(age))
-  //   {
-  //     part2Count += initialTimerToFinalCountLookup[age];
-  //   }
-  //   else
-  //   {
-  //     var tempSchool = new List<LanternFish> { new LanternFish(age) };
-  //     for (var i = 0; i < part2Days; i++)
-  //     {
-  //       var newFish = new List<LanternFish>();
-  //       foreach(var fish in tempSchool)
-  //       {
-  //         var result = fish.Tick();
-  //         if (result != null)
-  //         {
-  //           newFish.Add(result);
-  //         }
-  //       }
-  //       tempSchool.AddRange(newFish);
-  //     }
-  //     part2Count += tempSchool.Count;
-  //     initialTimerToFinalCountLookup[age] = tempSchool.Count;
-  //   }
-  // }
+  
   var part2Time = watch.Elapsed.TotalMilliseconds;
   Console.WriteLine(new { part2Count, part2Time });
+
+  watch.Reset();
+  var arrayApproachDays = 256;
+  long arrayApproachCount = 0;
+
+  var thirdSchool = File.ReadAllText("input").Split(',').Select(int.Parse).ToList();
+
+  var fishByDaysRemaining = new long[9];
+  thirdSchool.ForEach(num => fishByDaysRemaining[num] += 1);
+
+  for (var i = 0; i < arrayApproachDays; i++)
+  {
+    var zeroes = fishByDaysRemaining[0];
+    for (var j = 0; j < fishByDaysRemaining.Length -1; j++)
+    {
+      fishByDaysRemaining[j] = fishByDaysRemaining[j+1];
+    }
+    // parents go back to 6
+    fishByDaysRemaining[6] += zeroes;
+    // new fish
+    fishByDaysRemaining[8] = zeroes;
+  }
+
+  arrayApproachCount = fishByDaysRemaining.Sum();
+
+  var arrayApproachTime = watch.ElapsedTicks;
+  Console.WriteLine(new { arrayApproachCount, arrayApproachTime });
 
 }
 class LanternFish
