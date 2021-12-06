@@ -102,7 +102,7 @@ for (var run = 0; run < 5; run++)
 
   arrayApproachCount = fishByDaysRemaining.Sum();
 
-  var arrayApproachTime = watch.ElapsedTicks;
+  var arrayApproachTime = watch.Elapsed.TotalMilliseconds;
   Console.WriteLine(new { arrayApproachCount, arrayApproachTime });
 
 }
