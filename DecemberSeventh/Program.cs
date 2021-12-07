@@ -2,8 +2,8 @@
 for (var run = 0; run < 5; run++)
 {
   // initial approach, with sampling
-  watch.Restart();
   var distances = File.ReadAllText("input").Split(',').Select(int.Parse).ToArray();
+  watch.Restart();
 
   var min = distances.Min();
   var max = distances.Max();
@@ -60,12 +60,11 @@ for (var run = 0; run < 5; run++)
   var setupTime = watch.Elapsed.TotalMilliseconds;
   var answer = upFuel < middleFuel ? GetAnswer(startIndex + 1, upFuel, true) : GetAnswer(startIndex, middleFuel, false);
   var time = watch.Elapsed.TotalMilliseconds;
-  Console.WriteLine(new { answer, time, size = distances.Length });
+  Console.WriteLine(new { approach = "Sampling", answer, time, size = distances.Length });
 
   // binary search
-
-  watch.Restart();
   var distances2 = File.ReadAllText("input").Split(',').Select(int.Parse).ToArray();
+  watch.Restart();
 
   var min2 = distances.Min();
   var max2 = distances.Max();
@@ -103,6 +102,22 @@ for (var run = 0; run < 5; run++)
 
   time = watch.Elapsed.TotalMilliseconds;
   answer = SearchForAnswer(distances2, min2, max2);
-  Console.WriteLine(new { answer, time, size = distances.Length });
+  Console.WriteLine(new { approach = "Binary Search", answer, time, size = distances.Length });
 
+  // solution from https://github.com/jjcomer/advent-2021/blob/main/src/day07.rs to compare speed
+  // pub fn solve_part2_stats(input: &Vec<i32>) -> i32 {
+  //     let distance = input.iter().sum::<i32>().div(input.len() as i32);
+  //     input
+  //         .iter()
+  //         .map(|d| compute_fuel((distance - d).abs()))
+  //         .sum()
+  // }
+
+  var distances3 = File.ReadAllText("input").Split(',').Select(int.Parse).ToArray();
+  watch.Restart();
+
+  var averageDistance = distances3.Sum() / distances3.Length;
+  time = watch.Elapsed.TotalMilliseconds;
+  answer = distances3.Aggregate(0, (fuel, distance) => fuel + GetTotalFuel(distance, averageDistance));
+  Console.WriteLine(new { approach = "Stats", answer, time, size = distances.Length });
 }
