@@ -25,11 +25,7 @@ for (var run = 0; run < 5; run++)
   int GetTotalFuel(int position, int target)
   {
     var distance = Math.Abs(position - target);
-    var cost = 0;
-    for (var i = distance; i > 0; i--)
-    {
-      cost += i;
-    }
+    var cost = (distance * (distance + 1)) / 2;
     return cost;
   }
 
