@@ -1,9 +1,9 @@
 ﻿
 var timer = new System.Diagnostics.Stopwatch();
 
-var data = File.ReadLines("input2");
+var data = File.ReadLines("input");
 
-for (var run = 0; run < 1; run ++)
+for (var run = 0; run < 5; run ++)
 {
   timer.Restart();
 
@@ -30,9 +30,8 @@ for (var run = 0; run < 1; run ++)
     return new String(chars.ToArray());
   }
 
-  foreach (var line in data2)
+  int ProcessLine(string line)
   {
-    // Console.WriteLine(line);
     var halves = line.Split('|', StringSplitOptions.RemoveEmptyEntries);
     var inputs = halves[0].Split(' ', StringSplitOptions.RemoveEmptyEntries);
     var outputs = halves[1].Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -93,10 +92,20 @@ for (var run = 0; run < 1; run ++)
     lookup[nine] = 9;
     found[9] = true;
 
-    // Console.WriteLine(new { zero, one, two, three, four, five, six, seven, eight, nine });
-
-    part2Answer += outputs.Aggregate("", (accumulate, value) => accumulate + lookup[SortString(value)], int.Parse);
+    return outputs.Aggregate("", (accumulate, value) => accumulate + lookup[SortString(value)], int.Parse);
   }
+
+  var tasks = new List<Task<int>>();
+  foreach (var line in data2)
+  {
+    // 4 to 4.5 ms in series
+    var task = Task.Run<int>(() => ProcessLine(line));
+    tasks.Add(task);
+  }
+
+  Task.WaitAll(tasks.ToArray());
+
+  part2Answer = tasks.Select(t => t.Result).Sum();
 
 
   time = timer.Elapsed.TotalMilliseconds;
