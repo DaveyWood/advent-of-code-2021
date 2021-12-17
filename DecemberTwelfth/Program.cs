@@ -29,7 +29,7 @@ int FindPath(Cave location, HashSet<string> visited)
 
   var newVisited = new HashSet<string>(visited);
   newVisited.Add(location.Name);
-  
+
   return location.Neighbors
     // lookup the cave for each neighbor
     .Select(n => caves[n])
@@ -51,15 +51,15 @@ int FindPathPart2(Cave location, HashSet<string> visited, bool visitedASmallCave
 
   var newVisited = new HashSet<string>(visited);
   newVisited.Add(location.Name);
-  
-  
+
+
   var newAndUnvisted = location.Neighbors
     // lookup the cave for each neighbor
     .Select(n => caves[n])
     // we can go there if we've never been there or it's big
     .Where(n => !newVisited.Contains(n.Name) || n.Big)
     .Select(location => FindPathPart2(location, new HashSet<string>(newVisited), visitedASmallCaveTwice)).Sum();
-  
+
   if (visitedASmallCaveTwice)
   {
     return newAndUnvisted;
@@ -76,7 +76,7 @@ int FindPathPart2(Cave location, HashSet<string> visited, bool visitedASmallCave
 }
 
 var answer = FindPath(start, new HashSet<string> { "start" });
-var part2Answer = FindPathPart2(start, new HashSet<string> { "start "}, false);
+var part2Answer = FindPathPart2(start, new HashSet<string> { "start " }, false);
 
 Console.WriteLine(new { answer, part2Answer });
 
