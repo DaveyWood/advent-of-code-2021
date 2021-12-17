@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-var input = File.ReadLines("input2").GetEnumerator();
+var input = File.ReadLines("input").GetEnumerator();
 
 input.MoveNext();
 
@@ -36,18 +36,68 @@ for (var i = 0; i < uniqueLettersList.Count; i++)
   }
 }
 
-var counts = new Dictionary<char, long>();
+var counts = new ConcurrentDictionary<char, long>();
 uniqueLettersList.ForEach(letter => counts[letter] = 0);
 counts[chain[0]] = 1;
+
+var scoreCache = new ConcurrentDictionary<List<char>, Dictionary<char, long>>();
 
 for (var i = 0; i < chain.Count - 1; i++)
 {
   var pair = "" + chain[i] + chain[i + 1];
   var expanded = lookup[pair];
-  foreach (var c in expanded)
+
+  var firstKey = "" + pair[0] + expanded[0];
+  var firstScore = lookup[firstKey];
+  foreach (var c in firstScore)
   {
     counts[c] += 1;
   }
+
+  var tasks = new List<Task>();
+  for (var j = 0; j < expanded.Count - 1; j++)
+  {
+    var exp = expanded;
+    var lu = lookup;
+    var counter = j;
+    var key = "" + exp[j] + exp[j + 1];
+    var toScore = lu[key];
+    var v = j;
+    var z = expanded.Count;
+    var t = Task.Run(() =>
+    {
+      Console.WriteLine($"Iteration {v + 1} of {z}");
+      var localScores = scoreCache.GetOrAdd(toScore, toScore => {
+        var newScores = new Dictionary<char, long>();
+        foreach (var c in toScore)
+        {
+          if (newScores.ContainsKey(c))
+          {
+            newScores[c] += 1;
+          }
+          else
+          {
+            newScores[c] = 1;
+          }
+        }
+        return newScores;
+      });
+      foreach (var characterCount in localScores)
+      {
+        counts.AddOrUpdate(characterCount.Key, 
+          c => characterCount.Value, 
+          (c, currentCount) => currentCount + characterCount.Value);
+      }
+    });
+    tasks.Add(t);
+  }
+  Console.WriteLine(tasks.Count);
+  Task.WaitAll(tasks.ToArray());
+
+  // foreach (var c in expanded)
+  // {
+  //   counts[c] += 1;
+  // }
 }
 
 Console.WriteLine(new { part1Answer = counts.Values.Max() - counts.Values.Min() });
@@ -56,7 +106,7 @@ List<char> ProcessPair(string pair, Dictionary<string, char> rules)
 {
   var answer = new List<char>(pair);
 
-  for (var step = 0; step < 10; step++)
+  for (var step = 0; step < 20; step++)
   {
     var newChain = new List<char>();
     char? lastChar = null;
@@ -79,109 +129,3 @@ List<char> ProcessPair(string pair, Dictionary<string, char> rules)
   answer.RemoveAt(0);
   return answer;
 }
-
-// var totalCounts = new ConcurrentDictionary<char, long>();
-// var lookup = new ConcurrentDictionary<string, (List<char> characters, Dictionary<char, long> score)>();
-// // to prevent dupes, lookup doesn't include the first character in the pair. I think that means i just have to 
-// // include the original chain[0]
-// for (var i = 0; i < chain.Count - 1; i++)
-// {
-//   var pair = "" + chain[i] + chain[i + 1];
-//   if (!lookup.ContainsKey(pair))
-//   {
-//     ProcessPair(pair, rules, lookup);
-//   }
-// }
-// // now the string is...
-// // chain[n] + lookup[n concat n + 1]
-// for (var i = 0; i < chain.Count - 1; i++)
-// {
-//   var pair = "" + chain[i] + chain[i + 1];
-//   var series = lookup[pair].characters;
-//   Console.WriteLine(series.Count);
-//   var firstSet = "" + pair[0] + series[0];
-//   var lastSet = "" + series[series.Count - 1] + pair[1];
-//     if (!lookup.ContainsKey(firstSet))
-//     {
-//       ProcessPair(firstSet, rules, lookup);
-//     }
-//     if (!lookup.ContainsKey(lastSet))
-//     {
-//       ProcessPair(lastSet, rules, lookup);
-//     }
-//   ScorePair(firstSet, totalCounts, lookup);
-//   ScorePair(lastSet, totalCounts, lookup);
-//   for (var j = 0; j < series.Count - 1; j++)
-//   {
-//     var newPair = "" + series[j] + series[j + 1];
-//     if (!lookup.ContainsKey(newPair))
-//     {
-//       ProcessPair(newPair, rules, lookup);
-//     }
-//     ScorePair(newPair, totalCounts, lookup);
-//   }
-// }
-
-// totalCounts[chain[0]] += 1;
-
-// var part2Answer = totalCounts.Values.Max() - totalCounts.Values.Min();
-
-// Console.WriteLine( new { part2Answer });
-
-// void ScorePair(string pair, ConcurrentDictionary<char, long> scoreBoard, 
-//   ConcurrentDictionary<string, (List<char> characters, Dictionary<char, long> score)> lookup)
-// {
-//   var counts = lookup[pair].score;
-//   Console.WriteLine( new { counts });
-//   foreach (var entry in counts)
-//   {
-//     scoreBoard.AddOrUpdate(entry.Key, c => entry.Value, (c, current) => current + entry.Value);
-//   }
-// }
-
-// void ProcessPair(string pair, 
-//   Dictionary<string, char> rules, 
-//   ConcurrentDictionary<string, (List<char> characters, Dictionary<char, long> score)> lookup)
-// {
-//   var chain = new List<char>(pair);
-//   var lookupKey = "" + chain[0] + chain[1];
-//   for (var step = 0; step < 20; step++)
-//   {
-//     var newChain = new List<char>();
-//     char? lastChar = null;
-//     foreach(var character in chain)
-//     {
-//       if (lastChar != null)
-//       {
-//         var key = "" + lastChar + character;
-//         if (rules.ContainsKey(key))
-//         {
-//           Console.WriteLine("Found rule");
-//           newChain.Add(rules[key]);
-//           Console.WriteLine(newChain.Count);
-//         }
-//         newChain.Add(character);
-//       }
-//       lastChar = character;
-//     }
-//     chain = newChain;
-//   }
-
-//   var counts = new Dictionary<char, long>();
-//   foreach(char c in chain)
-//   {
-//     if (counts.ContainsKey(c))
-//     {
-//       counts[c] += 1;
-//     }
-//     else
-//     {
-//       counts[c] = 1;
-//     }
-//   }
-//   Console.WriteLine(chain.Count);
-//   lookup[lookupKey] = (chain, counts);
-// }
-// // var part1Answer = counts.Values.Max() - counts.Values.Min();
-
-// Console.WriteLine(new { part1Answer });
